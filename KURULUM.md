@@ -131,3 +131,17 @@ Paylaşım saatlerini değiştirmek için `.github/workflows/planli-post.yml` i�
 - AFAD bir depremin büyüklüğünü sonradan güncelleyebilir. Bot ilk açıklanan değeri paylaşır.
 - Bağımlılık yoktur. Yalnızca Python'un kendi kütüphanesi kullanılır.
 - Paylaşılan her şey `durum/` klasörüne kaydedilir. Bu dosyaları silerseniz bot taslakları baştan paylaşmaya çalışır. X aynı metni ikinci kez kabul etmez.
+
+## Kontrol paneli
+
+`Deprem X Paneli.command` dosyasına çift tıklayın. Tarayıcıda http://127.0.0.1:8765 açılır. Panel yalnızca bu bilgisayardan erişilebilir.
+
+Panelde yapabilecekleriniz:
+- Harcamayı, sıradaki postu ve son çalışmaları görmek
+- Bir taslağı ya da sıradakini hemen paylaşmak
+- Deneme çalıştırması yapmak
+- Taslak eklemek, düzenlemek, silmek ve sırasını değiştirmek
+- Otomatik paylaşımı duraklatmak
+- Bütçeyi ve en küçük deprem büyüklüğünü değiştirmek
+
+Paneli kapatmak için açılan Terminal penceresini kapatın. Panel kapalıyken de bot GitHub'da çalışmaya devam eder.
