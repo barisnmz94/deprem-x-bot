@@ -1,0 +1,41 @@
+name: Deprem takip
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+    inputs:
+      deneme:
+        description: "Deneme modu (X'e göndermez)"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: deprem-takip
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Yeni depremleri paylaş
+        env:
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
+          DRY_RUN: ${{ inputs.deneme && '1' || '0' }}
+          MIN_MAGNITUDE: ${{ vars.MIN_MAGNITUDE || '4.0' }}
+          MONTHLY_BUDGET_USD: ${{ vars.MONTHLY_BUDGET_USD || '8' }}
+        run: python bot.py deprem
+      - name: Durumu kaydet
+        if: always()
+        run: bash .github/kaydet.sh "deprem takip"

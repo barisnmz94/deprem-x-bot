@@ -1,0 +1,45 @@
+name: Planlı post
+
+on:
+  schedule:
+    # 06:10 ve 16:40 UTC = 09:10 ve 19:40 TSİ. Script ayrıca 0-45 dk rastgele bekler.
+    - cron: "10 6 * * *"
+    - cron: "40 16 * * *"
+  workflow_dispatch:
+    inputs:
+      deneme:
+        description: "Deneme modu (X'e göndermez)"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: planli-post
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Rastgele bekle
+        if: github.event_name == 'schedule'
+        run: sleep $(( RANDOM % 2700 ))
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Taslağı paylaş
+        env:
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
+          DRY_RUN: ${{ inputs.deneme && '1' || '0' }}
+          MONTHLY_BUDGET_USD: ${{ vars.MONTHLY_BUDGET_USD || '8' }}
+        run: python bot.py planli
+      - name: Durumu kaydet
+        if: always()
+        run: bash .github/kaydet.sh "planlı post"
