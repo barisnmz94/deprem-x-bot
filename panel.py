@@ -225,7 +225,7 @@ def run_log(run_id: str) -> str:
         line = re.sub(r"^﻿?\d{4}-\d{2}-\d{2}T[\d:.]+Z ?", "", parts[2])
         if line.startswith("##[") or re.match(r"^\s*(shell|env):", line) or re.match(r"^\s+[A-Za-z0-9_]+: ", line):
             continue
-        if "\x1b[" in line or line.startswith(("python bot.py", "bash .github", "sleep ")):
+        if "\x1b[" in line or "^[[" in line or line.startswith(("python bot.py", "bash .github", "sleep ")):
             continue
         lines.append(line)
     return "\n".join(lines).strip() or "Bu çalışmada bottan çıktı yok (iş atlanmış olabilir)."
