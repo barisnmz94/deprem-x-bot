@@ -1,7 +1,7 @@
 [
   {"id": "k01", "tur": "uygulama", "baglanti": true, "metin": "Deprem olduğunda herkes aynı anda yakınlarını arar ve hatlar kilitlenir.\n\nDeprem uygulamasıyla ailenize \"İyiyim\" demek için arama gerekmez. Az bir internet yeter.\n\n#deprem"},
-  {"id": "e01", "tur": "uygulama", "metin": "Deprem merkezden dalga dalga yayılır. Sarsıntı saniyede yaklaşık 3,5 km ilerler.\n\nMerkezden uzaktaysanız, sarsıntı size ulaşmadan önce birkaç saniye kazanabilirsiniz.\n\nDeprem uygulaması bu saniyeleri size kazandırmak için var.\n\n#deprem"},
   {"id": "i01", "tur": "uygulama", "metin": "İnternet de giderse ne olacak?\n\nDeprem uygulaması yakındaki telefonlarla Bluetooth ve Wi-Fi üzerinden doğrudan haberleşir.\n\nBaz istasyonu da internet de gerekmez.\n\n#deprem"},
+  {"id": "e01", "tur": "uygulama", "metin": "Deprem merkezden dalga dalga yayılır. Sarsıntı saniyede yaklaşık 3,5 km ilerler.\n\nMerkezden uzaktaysanız, sarsıntı size ulaşmadan önce birkaç saniye kazanabilirsiniz.\n\nDeprem uygulaması bu saniyeleri size kazandırmak için var.\n\n#deprem"},
   {"id": "h01", "tur": "hazirlik", "metin": "Sarsıntı başladığında üç şeyi hatırlayın.\n\nÇök: dizlerinizin üzerine çökün.\nKapan: başınızı ve ensenizi koruyun.\nTutun: sarsıntı bitene kadar sağlam bir şeye tutunun.\n\n#deprem #ÇökKapanTutun"},
   {"id": "k02", "tur": "uygulama", "metin": "Uzaktaki anneniz deprem haberini duyunca ilk ne yapar?\n\nSizi arar. Ama hatlar dolu.\n\nDeprem uygulamasında \"İyiyim\" dediğiniz an Ailem'deki herkes bildirimle öğrenir.\n\n#deprem"},
   {"id": "i02", "tur": "uygulama", "metin": "İnternetsiz hazır mesajlar:\n\n💧 Su lazım\n🩹 Yanımda yaralı var\n✅ Güvendeyim\n🆘 Yardım lazım\n\nDeprem uygulamasında bunları yakınınızdaki telefonlara internet olmadan gönderebilirsiniz.\n\n#deprem"},
