@@ -11,6 +11,10 @@ on:
         description: "Deneme modu (X'e göndermez)"
         type: boolean
         default: true
+      taslak:
+        description: "Belirli bir taslağı paylaş (boşsa sıradaki)"
+        type: string
+        default: ""
 
 permissions:
   contents: write
@@ -21,6 +25,7 @@ concurrency:
 
 jobs:
   post:
+    if: github.event_name != 'schedule' || vars.BOT_DURDUR != '1'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -38,6 +43,8 @@ jobs:
           X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
           X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
           DRY_RUN: ${{ inputs.deneme && '1' || '0' }}
+          MANUEL: ${{ github.event_name == 'workflow_dispatch' && '1' || '0' }}
+          TASLAK_ID: ${{ inputs.taslak }}
           MONTHLY_BUDGET_USD: ${{ vars.MONTHLY_BUDGET_USD || '8' }}
         run: python bot.py planli
       - name: Durumu kaydet

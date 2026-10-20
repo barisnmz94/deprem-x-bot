@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deprem X Paneli</title>
+<style>
+:root {
+  --bg: #F4F7F8; --card: #FFFFFF; --line: #DCE4E7; --text: #12262B; --muted: #5B6F75;
+  --brand: #0B6E79; --brand-fill: #0B6E79; --brand-soft: #E3F1F2; --on-brand: #FFFFFF;
+  --ok: #23845C; --ok-soft: #E2F3EB; --warn: #B86E00; --warn-soft: #FBF0DD;
+  --bad: #D93F3F; --bad-soft: #FBE6E6; --shadow: 0 1px 2px rgba(18,38,43,.06), 0 4px 14px rgba(18,38,43,.05);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0C1417; --card: #142126; --line: #24363C; --text: #E6F0F2; --muted: #93A8AE;
+    --brand: #3FB8C4; --brand-fill: #16808A; --brand-soft: #173A3F; --on-brand: #FFFFFF;
+    --ok: #4CC38A; --ok-soft: #173327; --warn: #F2B451; --warn-soft: #3A2C12;
+    --bad: #FF6B66; --bad-soft: #3D1C1C; --shadow: none;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif; }
+a { color: var(--brand); text-decoration: none; }
+a:hover { text-decoration: underline; }
+header { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+.bar { max-width: 1180px; margin: 0 auto; padding: 14px 20px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 650; font-size: 17px; margin-right: auto; }
+.logo { width: 30px; height: 30px; border-radius: 8px; background: var(--brand-fill); display: grid; place-items: center; }
+.logo svg { width: 20px; height: 20px; }
+main { max-width: 1180px; margin: 0 auto; padding: 20px; display: grid; gap: 20px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
+.two { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 20px; align-items: start; }
+@media (max-width: 900px) { .two { grid-template-columns: 1fr; } }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px; box-shadow: var(--shadow); min-width: 0; }
+.card h2 { margin: 0 0 4px; font-size: 16px; font-weight: 650; }
+.card .sub { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
+.stat .label { color: var(--muted); font-size: 13px; }
+.stat .value { font-size: 26px; font-weight: 650; letter-spacing: -.01em; margin: 2px 0; font-variant-numeric: tabular-nums; }
+.stat .hint { color: var(--muted); font-size: 13px; }
+.meter { height: 8px; background: var(--brand-soft); border-radius: 99px; overflow: hidden; margin-top: 8px; }
+.meter > div { height: 100%; background: var(--brand); border-radius: 99px; }
+.meter.warn > div { background: var(--warn); }
+.meter.bad > div { background: var(--bad); }
+button, .btn { font: inherit; font-size: 14px; font-weight: 600; border-radius: 10px; padding: 9px 14px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--card); color: var(--text); display: inline-flex; gap: 6px; align-items: center; }
+button:hover { border-color: var(--brand); }
+button.primary { background: var(--brand-fill); border-color: var(--brand-fill); color: var(--on-brand); }
+button.primary:hover { filter: brightness(1.08); }
+button.danger { color: var(--bad); }
+button.small { padding: 5px 9px; font-size: 13px; border-radius: 8px; }
+button:disabled { opacity: .5; cursor: default; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; padding: 3px 10px; border-radius: 99px; white-space: nowrap; }
+.pill.ok { background: var(--ok-soft); color: var(--ok); }
+.pill.warn { background: var(--warn-soft); color: var(--warn); }
+.pill.bad { background: var(--bad-soft); color: var(--bad); }
+.pill.info { background: var(--brand-soft); color: var(--brand); }
+.pill.muted { background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; font-weight: 600; font-size: 14px; }
+.switch input { display: none; }
+.track { width: 42px; height: 24px; border-radius: 99px; background: var(--line); position: relative; transition: background .15s; }
+.track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform .15s; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+.switch input:checked + .track { background: var(--ok); }
+.switch input:checked + .track::after { transform: translateX(18px); }
+.banner { border-radius: 12px; padding: 12px 16px; font-size: 14px; }
+.banner.warn { background: var(--warn-soft); color: var(--warn); }
+.banner.bad { background: var(--bad-soft); color: var(--bad); }
+.list { display: grid; gap: 10px; }
+.draft { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 8px; }
+.draft.next { border-color: var(--brand); box-shadow: 0 0 0 1px var(--brand) inset; }
+.draft .top { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.draft .id { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: var(--muted); }
+.draft .text { white-space: pre-wrap; font-size: 14px; overflow-wrap: anywhere; }
+.draft .tools { display: flex; gap: 6px; flex-wrap: wrap; }
+.draft .meta { color: var(--muted); font-size: 12.5px; margin-left: auto; font-variant-numeric: tabular-nums; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+td, th { text-align: left; padding: 9px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+th { color: var(--muted); font-weight: 600; font-size: 12.5px; }
+tr:last-child td { border-bottom: 0; }
+.muted { color: var(--muted); }
+.empty { color: var(--muted); font-size: 14px; padding: 8px 0; }
+.tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+.tabs button { border-radius: 99px; padding: 6px 12px; font-size: 13px; }
+.tabs button.on { background: var(--brand-soft); color: var(--brand); border-color: transparent; }
+dialog { border: 1px solid var(--line); border-radius: 16px; padding: 0; background: var(--card); color: var(--text); width: min(640px, calc(100vw - 32px)); }
+dialog::backdrop { background: rgba(5, 14, 17, .55); }
+.dlg { padding: 20px; display: grid; gap: 14px; }
+.dlg h3 { margin: 0; font-size: 17px; }
+textarea, input[type=number], select { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; width: 100%; }
+textarea { min-height: 190px; resize: vertical; line-height: 1.5; }
+textarea:focus, input:focus, select:focus { outline: 2px solid var(--brand); outline-offset: -1px; }
+.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.row > label { font-size: 13px; color: var(--muted); display: grid; gap: 4px; flex: 1; min-width: 160px; }
+.check { display: inline-flex; gap: 8px; align-items: center; font-size: 14px; }
+.counter { font-size: 13px; font-variant-numeric: tabular-nums; }
+.counter.bad { color: var(--bad); font-weight: 600; }
+pre.log { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 12px; max-height: 60vh; overflow: auto; white-space: pre-wrap; font: 12.5px/1.5 ui-monospace, "SF Mono", Menlo, monospace; margin: 0; }
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-size: 14px; font-weight: 600; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 20; max-width: calc(100vw - 32px); }
+.toast.show { opacity: 1; }
+.toast.err { background: var(--bad); color: #fff; }
+.spin { width: 14px; height: 14px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: s .8s linear infinite; display: inline-block; }
+@keyframes s { to { transform: rotate(360deg); } }
+.settings { display: grid; gap: 14px; }
+.settings .row label { flex: 1; }
+.settings input, .settings select { max-width: 140px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <div class="brand">
+      <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h4l2.5-6 4 12 3-8 1.5 2H22"/></svg></div>
+      Deprem X Paneli
+    </div>
+    <label class="switch" title="Kapatınca otomatik planlı post ve deprem paylaşımı durur">
+      <input type="checkbox" id="autoToggle"><span class="track"></span><span id="autoLabel">Otomatik paylaşım</span>
+    </label>
+    <button id="refreshBtn" title="GitHub'dan en güncel durumu al">Yenile</button>
+  </div>
+</header>
+
+<main>
+  <div id="banners" class="list"></div>
+
+  <section class="grid">
+    <div class="card stat">
+      <div class="label">Sıradaki otomatik post</div>
+      <div class="value" id="nextSlot">–</div>
+      <div class="hint" id="nextDraft">–</div>
+    </div>
+    <div class="card stat">
+      <div class="label">Bu ay harcanan</div>
+      <div class="value" id="spent">–</div>
+      <div class="meter" id="spentMeter"><div style="width:0"></div></div>
+      <div class="hint" id="spentHint" style="margin-top:6px">–</div>
+    </div>
+    <div class="card stat">
+      <div class="label">Sırada bekleyen taslak</div>
+      <div class="value" id="queueCount">–</div>
+      <div class="hint" id="queueHint">–</div>
+    </div>
+    <div class="card stat">
+      <div class="label">Paylaşılan</div>
+      <div class="value" id="postedCount">–</div>
+      <div class="hint"><a id="profileLink" target="_blank" rel="noopener">X profilini aç</a></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Hemen yap</h2>
+    <p class="sub">İşler GitHub'da çalışır. Sonuç yaklaşık 30 saniye içinde "Son çalışmalar" listesinde görünür.</p>
+    <div class="actions">
+      <button class="primary" data-run="planli" data-confirm="Sıradaki taslak şimdi X'te paylaşılacak. Devam edilsin mi?">Sıradakini şimdi paylaş</button>
+      <button data-run="planli" data-dry="1">Deneme yap (göndermez)</button>
+      <button data-run="deprem">Depremleri şimdi kontrol et</button>
+      <button data-run="kontrol">X bağlantısını test et</button>
+      <button id="newDraftBtn">+ Yeni taslak</button>
+    </div>
+  </section>
+
+  <div class="two">
+    <section class="card">
+      <h2>Taslaklar</h2>
+      <p class="sub">Yukarıdaki ilk taslak bir sonraki otomatik postta gider. Sırayı oklarla değiştirebilirsiniz.</p>
+      <div class="tabs" id="draftTabs">
+        <button class="on" data-tab="sira">Sırada</button>
+        <button data-tab="paylasilan">Paylaşılanlar</button>
+      </div>
+      <div id="draftList" class="list"><div class="empty">Yükleniyor…</div></div>
+    </section>
+
+    <div class="list" style="gap:20px">
+      <section class="card">
+        <h2>Son çalışmalar</h2>
+        <p class="sub">Bir satıra tıklayınca botun ne yaptığını görürsünüz.</p>
+        <table><thead><tr><th>İş</th><th>Sonuç</th><th>Zaman</th></tr></thead><tbody id="runs"></tbody></table>
+      </section>
+
+      <section class="card">
+        <h2>Paylaşılan depremler</h2>
+        <p class="sub">AFAD, Kandilli veya EMSC'den gelen M≥<span id="minMagLabel">4,0</span> depremler.</p>
+        <div id="quakes"></div>
+      </section>
+
+      <section class="card settings">
+        <div><h2>Ayarlar</h2><p class="sub" style="margin:0">Değişiklik bir sonraki çalışmadan itibaren geçerli olur.</p></div>
+        <div class="row">
+          <label>Aylık bütçe üst sınırı ($)<input type="number" id="budgetInput" min="1" max="50" step="1"></label>
+          <button class="small" id="budgetSave">Kaydet</button>
+        </div>
+        <div class="row">
+          <label>Paylaşılacak en küçük deprem
+            <select id="magInput">
+              <option value="3.5">3,5 ve üstü</option><option value="4.0">4,0 ve üstü</option>
+              <option value="4.5">4,5 ve üstü</option><option value="5.0">5,0 ve üstü</option>
+            </select></label>
+          <button class="small" id="magSave">Kaydet</button>
+        </div>
+        <div class="row muted" style="font-size:13px">
+          <span>X bakiyesi için <a href="https://console.x.com" target="_blank" rel="noopener">console.x.com</a> · Tüm kayıtlar için <a id="actionsLink" target="_blank" rel="noopener">GitHub Actions</a></span>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<dialog id="editDlg">
+  <form class="dlg" method="dialog" id="editForm">
+    <h3 id="editTitle">Yeni taslak</h3>
+    <textarea id="editText" placeholder="Post metni. Yeni satır için Enter. En fazla 2 hashtag."></textarea>
+    <div class="row">
+      <label>Tür
+        <select id="editType"></select></label>
+      <label class="check" style="flex:2"><input type="checkbox" id="editLink"> App Store bağlantısı ekle (post 0,20 $ tutar)</label>
+    </div>
+    <div class="row" id="editPosRow">
+      <label class="check"><input type="checkbox" id="editFirst"> Sıranın başına koy</label>
+    </div>
+    <div class="row">
+      <span class="counter" id="editCounter">0/280</span>
+      <span class="muted" style="font-size:13px" id="editCost"></span>
+      <span style="margin-left:auto" class="actions">
+        <button value="cancel" formnovalidate>Vazgeç</button>
+        <button class="primary" id="editSave" value="save">Kaydet</button>
+      </span>
+    </div>
+    <div class="banner bad" id="editError" hidden></div>
+  </form>
+</dialog>
+
+<dialog id="logDlg">
+  <div class="dlg">
+    <h3 id="logTitle">Çalışma kaydı</h3>
+    <pre class="log" id="logText">Yükleniyor…</pre>
+    <div class="row"><a id="logLink" target="_blank" rel="noopener">GitHub'da aç</a><span style="margin-left:auto"><button onclick="logDlg.close()">Kapat</button></span></div>
+  </div>
+</dialog>
+
+<dialog id="confirmDlg">
+  <form class="dlg" method="dialog">
+    <h3 id="confirmTitle">Emin misiniz?</h3>
+    <div id="confirmText" class="muted"></div>
+    <div class="row"><span style="margin-left:auto" class="actions">
+      <button value="no">Vazgeç</button><button class="primary" id="confirmYes" value="yes">Evet</button></span></div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const TOKEN = "__TOKEN__";
+const APP_LINK = "https://apps.apple.com/tr/app/id6821462060?ct=x_organik";
+let state = null, tab = "sira", editing = null, timer = null;
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const usd = (n) => n.toLocaleString("tr-TR", {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " $";
+const trNum = (n) => n.toLocaleString("tr-TR", {minimumFractionDigits: 1, maximumFractionDigits: 1});
+
+function when(iso) {
+  if (!iso) return "–";
+  const d = new Date(iso), now = new Date();
+  const diff = (now - d) / 60000;
+  if (diff < 1) return "az önce";
+  if (diff < 60) return Math.round(diff) + " dk önce";
+  const sameDay = d.toDateString() === now.toDateString();
+  const yesterday = new Date(now - 864e5).toDateString() === d.toDateString();
+  const hm = d.toLocaleTimeString("tr-TR", {hour: "2-digit", minute: "2-digit"});
+  if (sameDay) return "Bugün " + hm;
+  if (yesterday) return "Dün " + hm;
+  return d.toLocaleDateString("tr-TR", {day: "numeric", month: "short"}) + " " + hm;
+}
+
+function toast(msg, err) {
+  const t = $("toast"); t.textContent = msg; t.className = "toast show" + (err ? " err" : "");
+  clearTimeout(t._h); t._h = setTimeout(() => t.className = "toast", err ? 6000 : 3000);
+}
+
+async function api(path, body) {
+  const opts = {headers: {"X-Panel-Token": TOKEN}};
+  if (body) { opts.method = "POST"; opts.headers["Content-Type"] = "application/json"; opts.body = JSON.stringify(body); }
+  const r = await fetch(path, opts);
+  const data = await r.json().catch(() => ({hata: "Panel sunucusuna ulaşılamadı."}));
+  if (data.hata) throw new Error(data.hata);
+  return data;
+}
+
+function confirmBox(title, text, yes = "Evet") {
+  return new Promise((resolve) => {
+    $("confirmTitle").textContent = title; $("confirmText").textContent = text; $("confirmYes").textContent = yes;
+    const dlg = $("confirmDlg");
+    dlg.onclose = () => resolve(dlg.returnValue === "yes");
+    dlg.returnValue = ""; dlg.showModal();
+  });
+}
+
+async function load(force) {
+  $("refreshBtn").disabled = true; $("refreshBtn").innerHTML = '<span class="spin"></span> Yenileniyor';
+  try { state = await api("/api/durum" + (force ? "?yenile=1" : "")); render(); }
+  catch (e) { toast(e.message, true); }
+  finally { $("refreshBtn").disabled = false; $("refreshBtn").textContent = "Yenile"; schedule(); }
+}
+
+function schedule() {
+  clearTimeout(timer);
+  const busy = state && state.calismalar.some((r) => r.status !== "completed");
+  timer = setTimeout(() => load(true), busy ? 12000 : 60000);
+}
+
+function render() {
+  const s = state;
+  $("autoToggle").checked = !s.duraklatildi;
+  $("autoLabel").textContent = s.duraklatildi ? "Otomatik paylaşım duraklatıldı" : "Otomatik paylaşım açık";
+
+  const banners = [];
+  if (s.sync_error) banners.push(`<div class="banner bad">${esc(s.sync_error)}</div>`);
+  if (s.duraklatildi) banners.push(`<div class="banner warn">Otomatik paylaşım duraklatıldı. Planlı postlar ve deprem paylaşımları çalışmıyor. Elle paylaşım yapabilirsiniz.</div>`);
+  if (s.tam_bekleme) banners.push(`<div class="banner warn">Son 24 saatte büyük bir deprem oldu. Planlı postlar 24 saat bekletiliyor, yalnızca deprem bilgisi paylaşılıyor.</div>`);
+  else if (s.tanitim_bekliyor) banners.push(`<div class="banner warn">Son 24 saatte M≥5,5 deprem oldu. Uygulama tanıtımı içeren taslaklar 24 saat atlanıyor.</div>`);
+  if (s.harcanan >= s.butce) banners.push(`<div class="banner bad">Aylık bütçe doldu. Bu ay başka post gönderilmeyecek. Ayarlar'dan sınırı artırabilirsiniz.</div>`);
+  if (s.sira.length < 10) banners.push(`<div class="banner warn">Sırada yalnızca ${s.sira.length} taslak kaldı. Yeni taslak ekleyin.</div>`);
+  $("banners").innerHTML = banners.join("");
+
+  $("nextSlot").textContent = s.duraklatildi ? "Duraklatıldı" : s.siradaki_saat;
+  const next = s.sira.find((d) => !(s.tanitim_bekliyor && (d.baglanti || d.tur === "uygulama")));
+  $("nextDraft").textContent = next ? `${next.id} · ${next.metin.split("\n")[0].slice(0, 60)}` : "Sırada taslak yok";
+
+  $("spent").textContent = usd(s.harcanan);
+  const pct = Math.min(100, (s.harcanan / s.butce) * 100);
+  $("spentMeter").className = "meter" + (pct >= 100 ? " bad" : pct >= 75 ? " warn" : "");
+  $("spentMeter").firstElementChild.style.width = pct + "%";
+  $("spentHint").textContent = `Üst sınır ${usd(s.butce)} · bağlantısız post 0,015 $`;
+
+  $("queueCount").textContent = s.sira.length;
+  $("queueHint").textContent = `Günde 2 postla yaklaşık ${Math.floor(s.sira.length / 2)} gün yeter`;
+  $("postedCount").textContent = s.paylasilanlar.length + s.depremler.length;
+  $("profileLink").href = s.profil;
+  $("actionsLink").href = `https://github.com/${s.repo}/actions`;
+  $("minMagLabel").textContent = trNum(s.min_buyukluk);
+  if (document.activeElement !== $("budgetInput")) $("budgetInput").value = s.butce;
+  $("magInput").value = s.min_buyukluk.toFixed(1);
+
+  renderDrafts(); renderRuns(); renderQuakes();
+}
+
+function typePill(t) {
+  const name = state.turler[t] || t;
+  return `<span class="pill ${t === "uygulama" ? "info" : "muted"}">${esc(name)}</span>`;
+}
+
+function renderDrafts() {
+  document.querySelectorAll("#draftTabs button").forEach((b) => b.classList.toggle("on", b.dataset.tab === tab));
+  const list = tab === "sira" ? state.sira : state.paylasilanlar;
+  if (!list.length) { $("draftList").innerHTML = `<div class="empty">${tab === "sira" ? "Sırada taslak yok." : "Henüz paylaşılan taslak yok."}</div>`; return; }
+  $("draftList").innerHTML = list.map((d, i) => {
+    const link = d.baglanti ? `<span class="pill warn">Bağlantılı · 0,20 $</span>` : "";
+    const meta = tab === "sira" ? `${d.uzunluk}/280` : when(d.zaman);
+    let tools;
+    if (tab === "sira") {
+      tools = `<div class="tools">
+        <button class="small primary" data-act="now" data-id="${d.id}">Şimdi paylaş</button>
+        <button class="small" data-act="edit" data-id="${d.id}">Düzenle</button>
+        <button class="small" data-act="up" data-id="${d.id}" ${i === 0 ? "disabled" : ""} title="Yukarı taşı">↑</button>
+        <button class="small" data-act="down" data-id="${d.id}" ${i === list.length - 1 ? "disabled" : ""} title="Aşağı taşı">↓</button>
+        ${i > 0 ? `<button class="small" data-act="top" data-id="${d.id}">En başa al</button>` : ""}
+        <button class="small danger" data-act="del" data-id="${d.id}" style="margin-left:auto">Sil</button></div>`;
+    } else {
+      const url = d.post_id && /^\d+$/.test(d.post_id) ? `${state.profil}/status/${d.post_id}` : null;
+      tools = url ? `<div class="tools"><a href="${url}" target="_blank" rel="noopener">X'te görüntüle →</a></div>` : "";
+    }
+    const first = tab === "sira" && i === 0 ? `<span class="pill ok"><span class="dot"></span>Sıradaki</span>` : "";
+    return `<div class="draft ${tab === "sira" && i === 0 ? "next" : ""}">
+      <div class="top">${first}${typePill(d.tur)}${link}<span class="id">${esc(d.id)}</span><span class="meta">${meta}</span></div>
+      <div class="text">${esc(d.metin)}</div>${tools}</div>`;
+  }).join("");
+}
+
+const RESULT = {
+  success: ["ok", "Başarılı"], failure: ["bad", "Hata"], skipped: ["muted", "Atlandı"],
+  cancelled: ["muted", "İptal"], startup_failure: ["bad", "Başlamadı"],
+};
+function renderRuns() {
+  const rows = state.calismalar.map((r) => {
+    let cls, label;
+    if (r.status !== "completed") { cls = "info"; label = r.status === "queued" || r.status === "waiting" ? "Sırada" : "Sürüyor"; }
+    else [cls, label] = RESULT[r.conclusion] || ["muted", r.conclusion || "–"];
+    const how = r.event === "schedule" ? "otomatik" : "elle";
+    return `<tr data-run-id="${r.databaseId}" data-url="${esc(r.url)}" data-name="${esc(r.ad)}" style="cursor:pointer">
+      <td>${esc(r.ad)} <span class="muted" style="font-size:12.5px">· ${how}</span></td>
+      <td><span class="pill ${cls}">${r.status !== "completed" ? '<span class="spin" style="width:10px;height:10px"></span>' : '<span class="dot"></span>'}${label}</span></td>
+      <td class="muted">${when(r.createdAt)}</td></tr>`;
+  });
+  $("runs").innerHTML = rows.join("") || `<tr><td colspan="3" class="empty">Henüz çalışma yok.</td></tr>`;
+}
+
+function renderQuakes() {
+  if (!state.depremler.length) { $("quakes").innerHTML = `<div class="empty">Henüz paylaşılan deprem yok.</div>`; return; }
+  $("quakes").innerHTML = `<table><tbody>${state.depremler.map((q) => {
+    const url = /^\d+$/.test(q.post_id) ? `${state.profil}/status/${q.post_id}` : null;
+    const cls = q.buyukluk >= 5 ? "bad" : "warn";
+    return `<tr><td><span class="pill ${cls}">M ${trNum(q.buyukluk)}</span></td><td>${esc(q.yer)}<div class="muted" style="font-size:12.5px">${esc(q.kaynak)} · ${when(q.zaman)}</div></td>
+      <td>${url ? `<a href="${url}" target="_blank" rel="noopener">Post →</a>` : ""}</td></tr>`;
+  }).join("")}</tbody></table>`;
+}
+
+async function runJob(job, opts = {}) {
+  try {
+    await api("/api/calistir", {is: job, deneme: !!opts.dry, taslak: opts.taslak || ""});
+    toast(opts.dry ? "Deneme başlatıldı. Sonucu Son çalışmalar'da görün." : "Başlatıldı. Sonuç birazdan Son çalışmalar'da.");
+    setTimeout(() => load(true), 6000);
+  } catch (e) { toast(e.message, true); }
+}
+
+document.querySelectorAll("[data-run]").forEach((b) => b.addEventListener("click", async () => {
+  if (b.dataset.confirm && !(await confirmBox("Şimdi paylaşılsın mı?", b.dataset.confirm, "Paylaş"))) return;
+  runJob(b.dataset.run, {dry: b.dataset.dry === "1"});
+}));
+
+$("draftTabs").addEventListener("click", (e) => { if (e.target.dataset.tab) { tab = e.target.dataset.tab; renderDrafts(); } });
+
+$("draftList").addEventListener("click", async (e) => {
+  const b = e.target.closest("button[data-act]"); if (!b) return;
+  const id = b.dataset.id, d = state.sira.find((x) => x.id === id);
+  if (b.dataset.act === "now") {
+    if (await confirmBox("Bu taslak şimdi paylaşılsın mı?", d.metin.split("\n")[0], "Paylaş")) runJob("planli", {taslak: id});
+  } else if (b.dataset.act === "edit") openEditor(d);
+  else if (b.dataset.act === "del") {
+    if (await confirmBox("Taslak silinsin mi?", d.metin.split("\n")[0], "Sil")) draftOp({islem: "sil", id}, "Taslak silindi.");
+  } else {
+    draftOp({islem: "tasi", id, yon: {up: "yukari", down: "asagi", top: "basa"}[b.dataset.act]}, "Sıra güncellendi.");
+  }
+});
+
+async function draftOp(body, okMsg) {
+  document.body.style.cursor = "progress";
+  try { await api("/api/taslak", body); toast(okMsg); await load(true); return true; }
+  catch (e) { toast(e.message, true); return false; }
+  finally { document.body.style.cursor = ""; }
+}
+
+// X'in karakter sayımı: bağlantı 23, emoji ve geniş karakterler 2.
+function xLength(text) {
+  text = text.normalize("NFC").replace(/https?:\/\/\S+/g, "x".repeat(23));
+  let n = 0;
+  for (const ch of text) {
+    const cp = ch.codePointAt(0);
+    if (cp === 0x200d || cp === 0xfe0f) continue;
+    n += (cp <= 0x10ff || (cp >= 0x2000 && cp <= 0x200d) || (cp >= 0x2010 && cp <= 0x201f) || (cp >= 0x2032 && cp <= 0x2037)) ? 1 : 2;
+  }
+  return n;
+}
+
+function updateCounter() {
+  const text = $("editText").value.trim() + ($("editLink").checked ? "\n\n" + APP_LINK : "");
+  const n = xLength(text), tags = (text.match(/#[\p{L}\p{N}_]+/gu) || []).length;
+  $("editCounter").textContent = `${n}/280 karakter · ${tags} hashtag`;
+  $("editCounter").className = "counter" + (n > 280 || tags > 2 ? " bad" : "");
+  $("editCost").textContent = $("editLink").checked ? "Maliyet 0,20 $" : "Maliyet 0,015 $";
+}
+
+function openEditor(d) {
+  editing = d || null;
+  $("editTitle").textContent = d ? `Taslağı düzenle · ${d.id}` : "Yeni taslak";
+  $("editType").innerHTML = Object.entries(state.turler).map(([k, v]) => `<option value="${k}">${v}${k === "uygulama" ? " (büyük depremden sonra bekletilir)" : ""}</option>`).join("");
+  $("editText").value = d ? d.metin : "";
+  $("editType").value = d ? d.tur : "hazirlik";
+  $("editLink").checked = d ? !!d.baglanti : false;
+  $("editFirst").checked = false;
+  $("editPosRow").hidden = !!d;
+  $("editError").hidden = true;
+  updateCounter();
+  $("editDlg").showModal();
+  $("editText").focus();
+}
+
+$("newDraftBtn").addEventListener("click", () => openEditor(null));
+["input", "change"].forEach((ev) => { $("editText").addEventListener(ev, updateCounter); $("editLink").addEventListener(ev, updateCounter); });
+
+$("editForm").addEventListener("submit", async (e) => {
+  if (e.submitter && e.submitter.value === "cancel") return;
+  e.preventDefault();
+  const body = {islem: editing ? "guncelle" : "ekle", id: editing ? editing.id : undefined,
+    metin: $("editText").value, tur: $("editType").value, baglanti: $("editLink").checked,
+    konum: $("editFirst").checked ? "basa" : "sona"};
+  $("editSave").disabled = true; $("editSave").innerHTML = '<span class="spin"></span> Kaydediliyor';
+  try {
+    await api("/api/taslak", body);
+    $("editDlg").close(); toast(editing ? "Taslak güncellendi." : "Taslak eklendi."); load(true);
+  } catch (err) { $("editError").textContent = err.message; $("editError").hidden = false; }
+  finally { $("editSave").disabled = false; $("editSave").textContent = "Kaydet"; }
+});
+
+$("runs").addEventListener("click", async (e) => {
+  const tr = e.target.closest("tr[data-run-id]"); if (!tr) return;
+  $("logTitle").textContent = tr.dataset.name + " · kayıt";
+  $("logLink").href = tr.dataset.url;
+  $("logText").textContent = "Yükleniyor…";
+  $("logDlg").showModal();
+  try { $("logText").textContent = (await api("/api/kayit?id=" + tr.dataset.runId)).metin; }
+  catch (err) { $("logText").textContent = err.message; }
+});
+
+$("autoToggle").addEventListener("change", async (e) => {
+  const pause = !e.target.checked;
+  if (pause && !(await confirmBox("Otomatik paylaşım duraklatılsın mı?", "Planlı postlar ve deprem paylaşımları siz tekrar açana kadar durur.", "Duraklat"))) { e.target.checked = true; return; }
+  try { await api("/api/ayar", {durdur: pause}); toast(pause ? "Duraklatıldı." : "Otomatik paylaşım açıldı."); load(true); }
+  catch (err) { e.target.checked = pause; toast(err.message, true); }
+});
+
+$("budgetSave").addEventListener("click", async () => {
+  try { await api("/api/ayar", {butce: $("budgetInput").value}); toast("Bütçe kaydedildi."); load(true); } catch (e) { toast(e.message, true); }
+});
+$("magSave").addEventListener("click", async () => {
+  try { await api("/api/ayar", {min_buyukluk: $("magInput").value}); toast("Kaydedildi."); load(true); } catch (e) { toast(e.message, true); }
+});
+$("refreshBtn").addEventListener("click", () => load(true));
+
+load(true);
+</script>
+</body>
+</html>

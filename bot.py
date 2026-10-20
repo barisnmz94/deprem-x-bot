@@ -498,19 +498,28 @@ def run_scheduled() -> int:
     state = load_json(POSTS_STATE, {"paylasilan": [], "harcama": {}})
     quakes = load_json(QUAKES_STATE, {"paylasilan": []})
     now = now_utc()
+    # Panelden "şimdi paylaş" denince süre ve büyük deprem beklemeleri uygulanmaz; seçimi kişi yapmıştır.
+    manual = os.environ.get("MANUEL") == "1"
+    forced_id = os.environ.get("TASLAK_ID", "").strip()
 
-    if big_quake_within(quakes, FULL_PAUSE_MAGNITUDE, hours=24, now=now):
+    if not manual and big_quake_within(quakes, FULL_PAUSE_MAGNITUDE, hours=24, now=now):
         print("  Son 24 saatte büyük deprem oldu. Planlı paylaşım yapılmadı; yalnızca deprem bilgisi paylaşılıyor.")
         return 0
     last = state["paylasilan"][-1]["zaman"] if state["paylasilan"] else None
-    if last and now - datetime.fromisoformat(last) < timedelta(hours=MIN_HOURS_BETWEEN_SCHEDULED):
+    if not manual and last and now - datetime.fromisoformat(last) < timedelta(hours=MIN_HOURS_BETWEEN_SCHEDULED):
         print(f"  Son planlı post {MIN_HOURS_BETWEEN_SCHEDULED:.0f} saatten yeni. Atlandı.")
         return 0
 
-    allow_promo = not big_quake_within(quakes, PROMO_PAUSE_MAGNITUDE, hours=24, now=now)
+    allow_promo = manual or not big_quake_within(quakes, PROMO_PAUSE_MAGNITUDE, hours=24, now=now)
     used = {p["id"] for p in state["paylasilan"]}
-    draft = next_draft(drafts, used, allow_promo)
     remaining = sum(1 for d in drafts if d["id"] not in used)
+    if forced_id:
+        draft = next((d for d in drafts if d["id"] == forced_id), None)
+        if draft is None or forced_id in used:
+            print(f"  ! {forced_id} taslağı bulunamadı ya da daha önce paylaşıldı.")
+            return 1
+    else:
+        draft = next_draft(drafts, used, allow_promo)
     if draft is None:
         print("  ! Paylaşılacak taslak kalmadı. taslaklar.json dosyasına yeni taslak ekleyin.")
         return 1

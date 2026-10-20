@@ -19,6 +19,7 @@ concurrency:
 
 jobs:
   check:
+    if: github.event_name != 'schedule' || vars.BOT_DURDUR != '1'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
