@@ -277,12 +277,15 @@ def fetch_afad(since: datetime) -> list[dict] | None:
     for item in items if isinstance(items, list) else []:
         try:
             when = datetime.strptime(item["date"][:19], "%Y-%m-%dT%H:%M:%S").replace(tzinfo=UTC)
-            province = item.get("province") or None
-            district = item.get("district") or None
+            # AFAD yurt dışı/açık deniz olaylarında da en yakın Türk ilçesini yazar; o durumda konum metni kullanılır.
+            location = item.get("location") or "Türkiye"
+            domestic = item.get("country") == "Türkiye" and " - [" not in location
+            province = (item.get("province") or None) if domestic else None
+            district = (item.get("district") or None) if domestic else None
             if province and district:
                 place = f"{district} ({province})"
             else:
-                place = (item.get("location") or "Türkiye").split(" - ")[0].strip()
+                place = location.split(" - [")[0].strip()
             result.append(quake("AFAD", str(item["eventID"]), float(item["magnitude"]), float(item.get("depth") or 0),
                                 float(item["latitude"]), float(item["longitude"]), place,
                                 province if province in PROVINCES else None, when))
