@@ -1,5 +1,21 @@
 {
-  "paylasilan": [],
-  "harcama": {},
-  "kucuk_sayac": 0
+  "paylasilan": [
+    {
+      "kaynak": "AFAD",
+      "id": "AFAD:597860",
+      "buyukluk": 4.2,
+      "derinlik": 7.0,
+      "enlem": 39.64817,
+      "boylam": 24.00283,
+      "yer": "Ege Denizi",
+      "il": null,
+      "zaman": "2026-10-31T01:01:50+00:00",
+      "post_zamani": "2026-10-31T01:43:14.408676+00:00",
+      "post_id": "2116345225341763602"
+    }
+  ],
+  "harcama": {
+    "2026-10": 0.015
+  },
+  "kucuk_sayac": 1
 }
