@@ -1,19 +1,5 @@
 {
-  "paylasilan": [
-    {
-      "kaynak": "AFAD",
-      "id": "AFAD:598077",
-      "buyukluk": 5.1,
-      "derinlik": 9.1,
-      "enlem": 34.53233,
-      "boylam": 26.553,
-      "yer": "Akdeniz",
-      "il": null,
-      "zaman": "2026-11-02T16:49:15+00:00",
-      "post_zamani": "2026-11-02T17:27:53.907027+00:00",
-      "post_id": "2117307729945509960"
-    }
-  ],
+  "paylasilan": [],
   "harcama": {
     "2026-10": 0.015,
     "2026-11": 0.015
